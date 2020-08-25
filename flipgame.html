@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>flip game</title>
+    <style>
+      .container {
+        display: flex;
+        justify-content: flex-start;
+        flex-direction: column;
+        width: 80%;
+        background: cyan;
+        min-height: 80vh;
+        height: 80%;
+        margin: 0 auto;
+      }
+      .beginInst {
+        display: flex;
+        width: 100%;
+        justify-content: space-around;
+      }
+      .inputMatrixCell {
+        display: flex;
+        justify-content: center;
+      }
+      .row {
+        width: 390px;
+        display: flex;
+      }
+      .row div {
+        float: left;
+        width: 10px;
+        padding: 5px;
+        border: 1px solid black;
+        margin: 0px;
+      }
+      .row2 {
+        width: 100%;
+        display: flex;
+      }
+      .row2 div {
+        float: left;
+        width: 4em;
+        padding: 5px;
+        border: 1px solid black;
+        margin: 0px;
+      }
+      .gameArea {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding-bottom: 5em;
+      }
+      button {
+        width: 4em;
+        background: rgb(47, 175, 255);
+        padding: 5px;
+      }
+      .toggleBtn {
+        background: rgb(47, 175, 255);
+        float: left;
+        width: 4.8em;
+        padding: 5px;
+        border: 1px solid black;
+        margin: 0px;
+        cursor: pointer;
+      }
+
+      #btn-0 {
+        margin-left: 4em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 style="text-align: center;">Flip game</h1>
+    <div class="inputMatrixCell">
+      <label for="cellNum">Enter matrix cell count (between 3 and 15):</label>
+      <input
+        type="number"
+        id="cellNum"
+        name="cellNum"
+        min="3"
+        max="15"
+        onchange="renderMatrix"
+      />
+      <button onclick="renderMatrix()">Create</button>
+    </div>
+    <br /><br /><br />
+    <div id="totalMoves" style="text-align: center;"></div>
+    <br />
+
+    <div class="container">
+      <div class="beginInst">
+        <div class="inputMat">
+          <p style="text-align: left;">Input matrix</p>
+          <div class="inputMatDiv"></div>
+        </div>
+        <div class="outputMat">
+          <p style="text-align: right;">Output matrix</p>
+          <div class="outputMatDiv"></div>
+        </div>
+      </div>
+
+      <br /><br /><br /><br />
+
+      <div class="gameArea">
+        <div class="innerGameArea"></div>
+      </div>
+    </div>
+
+    <script>
+      let inputArray, totalMovesCount;
+      function renderPlayGround() {
+        let totalMovesElm = document.getElementById("totalMoves");
+        totalMovesElm.innerHTML = `Total moves left: ${totalMovesCount}, hint:- it's half rows and half col`;
+
+        // create playground area.
+        let renderGameAreaMatHtml = `<div class="mainGameLandArray">`;
+
+        // render col btn;
+
+        for (let i = 0; i < inputArray.length; i++) {
+          renderGameAreaMatHtml += `<div id="btn-${i}" class="toggleBtn" data-type-val="${i}" data-type="column">toggle col ${
+            i + 1
+          }</div>`;
+        }
+
+        for (let i = 0; i < inputArray.length; i++) {
+          let innerCol = `<div class="row2"> <div class="toggleBtn" data-type-val="${i}" data-type="row">toggle row ${
+            i + 1
+          }</div>`;
+          for (let j = 0; j < inputArray[0].length; j++) {
+            innerCol += `<div>${inputArray[i][j]}</div>`;
+          }
+          innerCol += `</div>`;
+          renderGameAreaMatHtml += innerCol;
+        }
+        renderGameAreaMatHtml += `</div>`;
+        const gameLandEml = document.querySelector(".innerGameArea");
+
+        gameLandEml.innerHTML = renderGameAreaMatHtml;
+
+        const allToggleBtn = document.getElementsByClassName("toggleBtn");
+        [...allToggleBtn].map((el) =>
+          el.addEventListener("click", toggleRowCol)
+        );
+      }
+      function toggleRowCol(e) {
+        totalMovesCount--;
+        if (totalMovesCount == 0) {
+          alert("you lost");
+          location.reload();
+        }
+
+        let isRow = e.currentTarget.dataset.type === "row";
+        let value = e.currentTarget.dataset.typeVal;
+        value = parseInt(value);
+        if (isRow) {
+          for (let i = 0; i < inputArray.length; i++) {
+            inputArray[value][i] = inputArray[value][i] == 0 ? 1 : 0;
+          }
+        } else {
+          for (let i = 0; i < inputArray.length; i++) {
+            inputArray[i][value] = inputArray[i][value] == 0 ? 1 : 0;
+          }
+        }
+        renderPlayGround();
+      }
+      function getRandomNumberInRange(val) {
+        var arr = [];
+        while (arr.length < val) {
+          var r = Math.floor(Math.random() * val) + 1;
+          if (arr.indexOf(r) === -1) arr.push(r);
+        }
+        return arr;
+      }
+      function createRandomMat(n) {
+        var result = [];
+        for (var i = 0; i < n; i++) {
+          result[i] = [];
+          for (var j = 0; j < n; j++) {
+            // Math.floor(Math.random()+.5) will give random 0/1
+            result[i][j] = Math.floor(Math.random() + 0.5);
+          }
+        }
+        return result;
+      }
+      function renderMatrix() {
+        const cellNumElm = document.querySelector("#cellNum");
+        const val = cellNumElm.value;
+        if (val < 3 || val > 15) return;
+
+        // render input output matrix
+        const mat = createRandomMat(val);
+        inputArray = mat;
+        let renderInputMatHtml = `<div class="mainInputArray">`;
+        for (let i = 0; i < mat.length; i++) {
+          let innerCol = '<div class="row">';
+          for (let j = 0; j < mat[0].length; j++) {
+            innerCol += `<div>${mat[i][j]}</div>`;
+          }
+          innerCol += `</div>`;
+          renderInputMatHtml += innerCol;
+        }
+        renderInputMatHtml += `</div>`;
+        const inputEml = document.querySelector(".inputMatDiv");
+
+        inputEml.innerHTML = renderInputMatHtml;
+
+        // random number between 1 and 15 (Math.floor(Math.random() * val) + 1 )
+        const randomChangeNum = Math.floor(Math.random() * val) + 1;
+        totalMovesCount = randomChangeNum;
+
+        let outPutMat = JSON.parse(JSON.stringify(mat)); // simple way to clone
+        // now we will generate n different unique number in range of 1-random /2 for toggling the bits
+
+        var colRandomArray = getRandomNumberInRange(randomChangeNum / 2);
+        var rowRandomArray = getRandomNumberInRange(randomChangeNum / 2);
+
+        // toggle n different col
+        for (let i = 0; i < colRandomArray.length; i++) {
+          for (let j = 0; j < rowRandomArray.length; j++) {
+            outPutMat[j][colRandomArray[i]] =
+              outPutMat[j][colRandomArray[i]] == 1 ? 0 : 1;
+          }
+        }
+
+        // toggle n different rows
+        for (let i = 0; i < rowRandomArray.length; i++) {
+          for (let j = 0; j < colRandomArray.length; j++) {
+            outPutMat[rowRandomArray[i]][j] =
+              outPutMat[rowRandomArray[i]][j] == 1 ? 0 : 1;
+          }
+        }
+
+        // render output array
+        let renderOutputMatHtml = `<div class="mainOutputArray">`;
+        for (let i = 0; i < outPutMat.length; i++) {
+          let innerCol = '<div class="row">';
+          for (let j = 0; j < outPutMat[0].length; j++) {
+            innerCol += `<div>${outPutMat[i][j]}</div>`;
+          }
+          innerCol += `</div>`;
+          renderOutputMatHtml += innerCol;
+        }
+        renderOutputMatHtml += `</div>`;
+        const outputEml = document.querySelector(".outputMatDiv");
+
+        outputEml.innerHTML = renderOutputMatHtml;
+
+        renderPlayGround();
+      }
+    </script>
+  </body>
+</html>
