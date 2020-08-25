@@ -1,3 +1,5 @@
+// space O(n), time O(n)
+
 #include <iostream>
 #include <vector>
 
